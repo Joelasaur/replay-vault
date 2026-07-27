@@ -9,38 +9,141 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as ReplaysRouteImport } from './routes/replays'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ReplaysIdRouteImport } from './routes/replays.$id'
+import { Route as AuthenticatedReplaysNewRouteImport } from './routes/_authenticated/replays.new'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReplaysRoute = ReplaysRouteImport.update({
+  id: '/replays',
+  path: '/replays',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReplaysIdRoute = ReplaysIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ReplaysRoute,
+} as any)
+const AuthenticatedReplaysNewRoute = AuthenticatedReplaysNewRouteImport.update({
+  id: '/replays/new',
+  path: '/replays/new',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/replays': typeof ReplaysRouteWithChildren
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/replays/$id': typeof ReplaysIdRoute
+  '/replays/new': typeof AuthenticatedReplaysNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/replays': typeof ReplaysRouteWithChildren
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/replays/$id': typeof ReplaysIdRoute
+  '/replays/new': typeof AuthenticatedReplaysNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/replays': typeof ReplaysRouteWithChildren
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/replays/$id': typeof ReplaysIdRoute
+  '/_authenticated/replays/new': typeof AuthenticatedReplaysNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/replays'
+    | '/sitemap.xml'
+    | '/replays/$id'
+    | '/replays/new'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/replays'
+    | '/sitemap.xml'
+    | '/replays/$id'
+    | '/replays/new'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/replays'
+    | '/sitemap.xml'
+    | '/replays/$id'
+    | '/_authenticated/replays/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  ReplaysRoute: typeof ReplaysRouteWithChildren
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/replays': {
+      id: '/replays'
+      path: '/replays'
+      fullPath: '/replays'
+      preLoaderRoute: typeof ReplaysRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +151,51 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/replays/$id': {
+      id: '/replays/$id'
+      path: '/$id'
+      fullPath: '/replays/$id'
+      preLoaderRoute: typeof ReplaysIdRouteImport
+      parentRoute: typeof ReplaysRoute
+    }
+    '/_authenticated/replays/new': {
+      id: '/_authenticated/replays/new'
+      path: '/replays/new'
+      fullPath: '/replays/new'
+      preLoaderRoute: typeof AuthenticatedReplaysNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedReplaysNewRoute: typeof AuthenticatedReplaysNewRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedReplaysNewRoute: AuthenticatedReplaysNewRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
+interface ReplaysRouteChildren {
+  ReplaysIdRoute: typeof ReplaysIdRoute
+}
+
+const ReplaysRouteChildren: ReplaysRouteChildren = {
+  ReplaysIdRoute: ReplaysIdRoute,
+}
+
+const ReplaysRouteWithChildren =
+  ReplaysRoute._addFileChildren(ReplaysRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
+  ReplaysRoute: ReplaysRouteWithChildren,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

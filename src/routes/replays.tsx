@@ -54,11 +54,11 @@ function Browse() {
 
   function update(patch: Record<string, string | number | undefined>) {
     navigate({
-      search: (prev) => {
-        const next = { ...prev, ...patch };
+      search: (prev: Record<string, unknown>) => {
+        const next: Record<string, unknown> = { ...prev, ...patch };
         for (const k of Object.keys(next)) {
-          const v = (next as Record<string, unknown>)[k];
-          if (v === "" || v === undefined) delete (next as Record<string, unknown>)[k];
+          const v = next[k];
+          if (v === "" || v === undefined) delete next[k];
         }
         return next;
       },
