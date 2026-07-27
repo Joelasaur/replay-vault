@@ -14,7 +14,107 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      comments: {
+        Row: {
+          author_id: string | null
+          author_ign: string
+          body: string
+          created_at: string
+          id: string
+          replay_id: string
+        }
+        Insert: {
+          author_id?: string | null
+          author_ign: string
+          body: string
+          created_at?: string
+          id?: string
+          replay_id: string
+        }
+        Update: {
+          author_id?: string | null
+          author_ign?: string
+          body?: string
+          created_at?: string
+          id?: string
+          replay_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_replay_id_fkey"
+            columns: ["replay_id"]
+            isOneToOne: false
+            referencedRelation: "replays"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          ign: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          ign: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ign?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      replays: {
+        Row: {
+          created_at: string
+          division: number
+          hero: string
+          id: string
+          map: string
+          notes: string
+          rank: string
+          replay_code: string
+          result: string
+          role: string
+          submitter_id: string | null
+          submitter_ign: string
+        }
+        Insert: {
+          created_at?: string
+          division: number
+          hero: string
+          id?: string
+          map: string
+          notes?: string
+          rank: string
+          replay_code: string
+          result: string
+          role: string
+          submitter_id?: string | null
+          submitter_ign: string
+        }
+        Update: {
+          created_at?: string
+          division?: number
+          hero?: string
+          id?: string
+          map?: string
+          notes?: string
+          rank?: string
+          replay_code?: string
+          result?: string
+          role?: string
+          submitter_id?: string | null
+          submitter_ign?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
