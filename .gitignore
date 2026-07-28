@@ -38,3 +38,5 @@ dist-ssr
 /blob-report/
 .env.test.local
 
+#Codex
+/tmp/

@@ -116,9 +116,9 @@ export function suggestReplayRank(rank: Rank): Rank {
 }
 
 export function roleColorVar(role: Role): string {
-  return `var(--color-role-${role.toLowerCase()})`;
+  return `var(--role-${role.toLowerCase()})`;
 }
 
 export function rankColorVar(rank: Rank): string {
-  return `var(--color-rank-${rank.toLowerCase()})`;
+  return `var(--rank-${rank.toLowerCase()})`;
 }

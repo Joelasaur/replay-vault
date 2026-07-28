@@ -75,9 +75,9 @@
   --rank-gold: oklch(0.82 0.14 85);
   --rank-platinum: oklch(0.82 0.06 190);
   --rank-diamond: oklch(0.78 0.13 220);
-  --rank-master: oklch(0.72 0.16 300);
-  --rank-grandmaster: oklch(0.68 0.2 15);
-  --rank-champion: oklch(0.85 0.16 95);
+  --rank-master: oklch(0.74 0.12 150);
+  --rank-grandmaster: oklch(0.72 0.14 285);
+  --rank-champion: oklch(0.68 0.17 305);
 }
 
 @layer base {

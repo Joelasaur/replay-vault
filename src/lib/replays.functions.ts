@@ -79,7 +79,16 @@ export const getReplay = createServerFn({ method: "GET" })
 const createReplaySchema = z.object({
   role: z.enum(["Tank", "Damage", "Support"]),
   hero: z.string().min(1).max(50),
-  rank: z.enum(["Bronze", "Silver", "Gold", "Platinum", "Diamond", "Master", "Grandmaster", "Champion"]),
+  rank: z.enum([
+    "Bronze",
+    "Silver",
+    "Gold",
+    "Platinum",
+    "Diamond",
+    "Master",
+    "Grandmaster",
+    "Champion",
+  ]),
   division: z.coerce.number().int().min(1).max(5),
   replay_code: z
     .string()

@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { RankBadge, ResultBadge, RoleBadge } from "./Badges";
+import { RankBadge, RankIcon, ResultBadge, RoleBadge } from "./Badges";
 import type { Rank, Role } from "@/lib/replays";
 
 type Replay = {
@@ -29,11 +29,14 @@ export function ReplayCard({ replay }: { replay: Replay }) {
         <ResultBadge result={replay.result as "Win" | "Loss"} />
         <span className="ml-auto text-xs text-muted-foreground">{replay.map}</span>
       </div>
-      <div className="flex items-baseline justify-between gap-3">
-        <div className="font-display text-lg font-semibold">{replay.hero}</div>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <RankIcon rank={replay.rank as Rank} division={replay.division} />
+          <div className="truncate font-display text-lg font-semibold">{replay.hero}</div>
+        </div>
         <code
           data-testid="replay-code"
-          className="text-sm font-mono px-2 py-0.5 rounded bg-surface-2 border border-border"
+          className="shrink-0 text-sm font-mono px-2 py-0.5 rounded bg-surface-2 border border-border"
         >
           {replay.replay_code}
         </code>
