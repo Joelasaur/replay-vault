@@ -11,7 +11,7 @@ test("authed user can submit a replay without visiting /auth", async ({ page }) 
   await page.getByTestId("new-rank").selectOption("Diamond");
   await page.getByTestId("new-division").selectOption("3");
   await page.getByTestId("new-code").fill(code);
-  await page.getByTestId("new-map").selectOption("King's Row");
+  await page.getByTestId("new-map").selectOption("Ilios");
   await page.getByTestId("new-result").selectOption("Win");
   await page.getByTestId("new-notes").fill("E2E-created replay.");
 

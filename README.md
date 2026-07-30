@@ -13,7 +13,7 @@ bun run dev
 
 App runs on <http://localhost:8080>.
 
-## Playwright — the interview-facing part
+## Playwright
 
 The whole point of the test suite is to demonstrate two techniques:
 
@@ -27,14 +27,18 @@ For contrast, `tests/login-ui.spec.ts` walks the actual sign-in form so an inter
 1. Create a test user through the app once:
    - Start dev server, open `/auth`, click "No account? Create one".
    - Register with an email + password you're OK using for testing.
-2. Copy `.env.test.example` to `.env` (or `.env.test.local` — Playwright loads via `dotenv/config`) and fill in:
+2. Copy `.env.test.example` to the ignored `.env.test.local` file and fill in:
+   ```bash
+   cp .env.test.example .env.test.local
    ```
-   VITE_SUPABASE_URL=...           # already in .env, copy across
-   VITE_SUPABASE_PUBLISHABLE_KEY=...
+   ```
    E2E_TEST_EMAIL=you+e2e@example.com
    E2E_TEST_PASSWORD=your-test-password
    E2E_BASE_URL=http://localhost:8080   # or a deployed URL
    ```
+   Playwright loads secrets from `.env.test.local`, then fills in the existing
+   `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` from Lovable's
+   tracked `.env`.
 3. Run:
    ```bash
    bunx playwright install    # once
@@ -43,14 +47,14 @@ For contrast, `tests/login-ui.spec.ts` walks the actual sign-in form so an inter
 
 ### Spec map
 
-| Spec                       | Uses storage state? | What it proves                                              |
-| -------------------------- | ------------------- | ----------------------------------------------------------- |
-| `auth.setup.ts`            | writes it           | Token exchange + localStorage injection works.              |
-| `browse.spec.ts`           | no                  | Anonymous users can browse + filter; submit gates redirect. |
-| `filter-deeplink.spec.ts`  | no                  | Filter state is URL-driven and shareable.                   |
-| `submit.spec.ts`           | yes                 | Authed submit works without visiting `/auth`.               |
-| `comment.spec.ts`          | yes                 | Authed comment works without visiting `/auth`.              |
-| `login-ui.spec.ts`         | no                  | Full-UI login flow still works.                             |
+| Spec                      | Uses storage state? | What it proves                                              |
+| ------------------------- | ------------------- | ----------------------------------------------------------- |
+| `auth.setup.ts`           | writes it           | Token exchange + localStorage injection works.              |
+| `browse.spec.ts`          | no                  | Anonymous users can browse + filter; submit gates redirect. |
+| `filter-deeplink.spec.ts` | no                  | Filter state is URL-driven and shareable.                   |
+| `submit.spec.ts`          | yes                 | Authed submit works without visiting `/auth`.               |
+| `comment.spec.ts`         | yes                 | Authed comment works without visiting `/auth`.              |
+| `login-ui.spec.ts`        | no                  | Full-UI login flow still works.                             |
 
 ## GitHub
 
