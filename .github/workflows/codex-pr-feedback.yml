@@ -25,9 +25,6 @@ jobs:
   respond:
     if: >-
       ${{ (github.event.issue.pull_request || github.event.pull_request)
-        && startsWith(
-          github.event.review.body || github.event.comment.body,
-          '/codex')
         && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'),
           github.event.review.author_association
             || github.event.comment.author_association) }}
@@ -35,8 +32,45 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Resolve Codex request
+        id: request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: >-
+            ${{ github.event.issue.number
+              || github.event.pull_request.number }}
+          REVIEW_ID: ${{ github.event.review.id }}
+          EVENT_BODY: >-
+            ${{ github.event.review.body
+              || github.event.comment.body }}
+        run: |
+          request="$EVENT_BODY"
+
+          # Inline comments submitted as a review are not included in
+          # github.event.review.body, so retrieve that review's comments.
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request_review" \
+            && "$request" != /codex* ]]; then
+            request="$(gh api \
+              "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/reviews/${REVIEW_ID}/comments" \
+              --jq '[.[].body | select(startswith("/codex"))] | join("\n\n")')"
+          fi
+
+          if [[ "$request" != /codex* ]]; then
+            echo "requested=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "requested=true" >> "$GITHUB_OUTPUT"
+          {
+            echo "body<<CODEX_REQUEST"
+            echo "$request"
+            echo "CODEX_REQUEST"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Inspect repair pull request
         id: repair_pr
+        if: steps.request.outputs.requested == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
@@ -72,6 +106,7 @@ jobs:
           echo "pr_url=$pr_url" >> "$GITHUB_OUTPUT"
 
       - name: Check out current repair branch
+        if: steps.request.outputs.requested == 'true'
         uses: actions/checkout@v6
         with:
           ref: ${{ steps.repair_pr.outputs.head_sha }}
@@ -79,6 +114,7 @@ jobs:
           persist-credentials: false
 
       - name: Collect pull request feedback and context
+        if: steps.request.outputs.requested == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
@@ -86,8 +122,7 @@ jobs:
             ${{ github.event.issue.number
               || github.event.pull_request.number }}
           COMMENT_BODY: >-
-            ${{ github.event.review.body
-              || github.event.comment.body }}
+            ${{ steps.request.outputs.body }}
           COMMENTER: >-
             ${{ github.event.review.user.login
               || github.event.comment.user.login }}
@@ -115,6 +150,7 @@ jobs:
 
       - name: Ask Codex to respond to PR feedback
         id: codex
+        if: steps.request.outputs.requested == 'true'
         uses: openai/codex-action@v1
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
@@ -155,6 +191,7 @@ jobs:
             raw tool narration, or large command-output excerpts.
 
       - name: Publish response and any follow-up commit
+        if: steps.request.outputs.requested == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
