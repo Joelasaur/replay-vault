@@ -80,7 +80,10 @@ Sync this project to GitHub from the Lovable editor: Plus (+) → GitHub → Con
    ```
 
 Codex receives the run event, branch, commit, failed logs, and any optional
-context you provide, then opens a draft repair PR for review.
+context you provide. It tests its proposed repair with the real Playwright
+workflow before opening a draft PR. If that test fails, Codex gets the new
+failure log and may revise its fix once. After two failed test runs, the repair
+stops without opening a PR.
 
 ### Codex repair feedback
 
