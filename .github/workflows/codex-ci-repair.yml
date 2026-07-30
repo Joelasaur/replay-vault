@@ -101,6 +101,18 @@ jobs:
             - If no safe code change is justified, make no changes and clearly
               explain that in your final message.
 
+            Your final message will be placed directly in the draft pull request.
+            Write a concise, review-ready Markdown report with these headings:
+            - `## Diagnosis`: the root cause and the specific CI evidence.
+            - `## Investigation`: a short chronological list of the meaningful
+              checks you performed and what each established.
+            - `## Suggested fix`: what you changed and why it addresses the cause.
+            - `## Verification`: checks run, results, and anything not verified.
+
+            Summarize your reasoning using observable evidence and decisions.
+            Do not include hidden chain-of-thought, repetitive command output,
+            the full CI log, or low-level tool-call narration.
+
       - name: Open a draft repair pull request
         env:
           GH_TOKEN: ${{ github.token }}
@@ -139,7 +151,7 @@ jobs:
             echo
             echo "This PR is intentionally a draft and has not been merged or assumed correct."
             echo
-            echo "### Codex analysis"
+            echo "### Codex repair report"
             echo
             printf '%s\n' "$CODEX_SUMMARY"
           } > /tmp/codex-pr-body.md
