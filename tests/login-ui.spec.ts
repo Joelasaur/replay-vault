@@ -28,7 +28,7 @@ test("user can sign in through the UI", async ({ page }) => {
     (response) =>
       response.request().method() === "POST" &&
       response.url().includes("/auth/v1/token") &&
-      response.url().includes("grant_type=signin"),
+      response.url().includes("grant_type=password"),
     { timeout: 30_000 },
   );
   await submitButton.click();

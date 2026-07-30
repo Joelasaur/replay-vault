@@ -43,7 +43,7 @@ function AuthPage() {
         });
         if (error) throw error;
       }
-      // navigate({ to: "/" });
+      navigate({ to: "/" });
     } catch (err) {
       setError((err as Error).message);
     } finally {
