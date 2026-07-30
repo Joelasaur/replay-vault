@@ -90,7 +90,8 @@ fix once. After two failed test runs, the repair stops without opening a PR.
 
 On an open
 [`codex/ci-fix-*`](https://github.com/Joelasaur/replay-vault/pulls?q=is%3Apr+is%3Aopen+label%3Acodex-ci-repair)
-PR, start a comment with `/codex`:
+PR, start a conversation comment, submitted review, or inline review comment
+with `/codex`:
 
 ```text
 /codex Why is this change needed?
