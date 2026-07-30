@@ -43,7 +43,7 @@ function AuthPage() {
         });
         if (error) throw error;
       }
-      navigate({ to: "/" });
+      // navigate({ to: "/" });
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -51,8 +51,7 @@ function AuthPage() {
     }
   }
 
-  const inputCls =
-    "w-full rounded-md border border-input bg-background px-3 py-2 text-sm";
+  const inputCls = "w-full rounded-md border border-input bg-background px-3 py-2 text-sm";
 
   return (
     <div className="mx-auto max-w-md px-4 py-16">
