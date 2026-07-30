@@ -246,6 +246,10 @@ jobs:
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           sandbox: workspace-write
+          # The first Codex call already removed runner's sudo privileges.
+          # Reuse that now-unprivileged user instead of dropping sudo twice.
+          safety-strategy: unprivileged-user
+          codex-user: runner
           prompt: |
             Your first repair candidate did not pass the repository's actual
             Playwright GitHub Actions workflow. Diagnose the new failure in
