@@ -70,9 +70,17 @@ Sync this project to GitHub from the Lovable editor: Plus (+) → GitHub → Con
    `/job/987654321`, ignore that second number.
 2. Open [Actions → Codex CI Repair](https://github.com/Joelasaur/replay-vault/actions/workflows/codex-ci-repair.yml),
    then click **Run workflow**.
-3. Enter the run ID and start the workflow.
+3. Enter the run ID. Optionally add context that may help Codex interpret the
+   failure, then start the workflow. For example:
+   ```text
+   The push run passed, but the pull_request run failed. A push run tests the
+   branch commit directly, while a pull_request run tests GitHub's temporary
+   merge of that branch with the latest main branch. Investigate whether this
+   is an integration failure in the synthetic merge commit.
+   ```
 
-Codex will inspect the failed logs and open a draft repair PR for review.
+Codex receives the run event, branch, commit, failed logs, and any optional
+context you provide, then opens a draft repair PR for review.
 
 ### Codex repair feedback
 
