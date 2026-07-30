@@ -25,10 +25,14 @@ test("user can sign in through the UI", async ({ page }) => {
   // listening before the click so a fast response cannot be missed.
   // We add this check so that CI can tell us exactly where the UI failed (i.e, the missed supabase api call)
   const signInResponsePromise = page.waitForResponse(
-    (response) =>
-      response.request().method() === "POST" &&
-      response.url().includes("/auth/v1/token") &&
-      response.url().includes("grant_type=signin"),
+    (response) => {
+      const url = new URL(response.url());
+      return (
+        response.request().method() === "POST" &&
+        url.pathname === "/auth/v1/token" &&
+        url.searchParams.get("grant_type") === "password"
+      );
+    },
     { timeout: 30_000 },
   );
   await submitButton.click();
