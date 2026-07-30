@@ -11,6 +11,7 @@ on:
 permissions:
   actions: read
   contents: write
+  issues: write
   pull-requests: write
 
 jobs:
@@ -156,10 +157,16 @@ jobs:
             printf '%s\n' "$CODEX_SUMMARY"
           } > /tmp/codex-pr-body.md
 
+          gh label create codex-ci-repair \
+            --description "Draft CI repairs suggested by Codex" \
+            --color "7C3AED" \
+            --force
+
           gh pr create \
             --draft \
             --base "$BASE_BRANCH" \
             --head "$fix_branch" \
             --title "fix: suggest repair for failed CI run $RUN_ID" \
             --body-file /tmp/codex-pr-body.md \
+            --label codex-ci-repair \
             --reviewer "$REVIEWER"

@@ -55,3 +55,31 @@ For contrast, `tests/login-ui.spec.ts` walks the actual sign-in form so an inter
 ## GitHub
 
 Sync this project to GitHub from the Lovable editor: Plus (+) → GitHub → Connect project. Then clone locally to keep iterating.
+
+### Codex CI repair
+
+1. Open a failed workflow run and copy the **run ID** from its URL:
+   ```text
+   https://github.com/Joelasaur/replay-vault/actions/runs/123456789
+   ```
+   In this example, the run ID is `123456789`. If the URL also contains
+   `/job/987654321`, ignore that second number.
+2. Open [Actions → Codex CI Repair](https://github.com/Joelasaur/replay-vault/actions/workflows/codex-ci-repair.yml),
+   then click **Run workflow**.
+3. Enter the run ID and start the workflow.
+
+Codex will inspect the failed logs and open a draft repair PR for review.
+
+### Codex repair feedback
+
+On an open
+[`codex/ci-fix-*`](https://github.com/Joelasaur/replay-vault/pulls?q=is%3Apr+is%3Aopen+label%3Acodex-ci-repair)
+PR, start a comment with `/codex`:
+
+```text
+/codex Why is this change needed?
+/codex Update the fix without changing the Playwright version.
+```
+
+Codex will either reply with clarification or push a follow-up commit to the
+same PR. Only repository collaborators can run these commands.
