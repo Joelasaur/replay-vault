@@ -12,11 +12,18 @@ test("user can sign in through the UI", async ({ page }) => {
   test.skip(!email || !password, "E2E_TEST_EMAIL / E2E_TEST_PASSWORD not set");
 
   await page.goto("/auth");
+  const submitButton = page.getByTestId("auth-submit");
+
+  // The server-rendered form is disabled until React hydrates. Filling its
+  // controlled inputs earlier can be overwritten when hydration completes.
+  await expect(submitButton).toBeEnabled({ timeout: 10_000 });
+
   await page.getByTestId("auth-email").fill(email);
   await page.getByTestId("auth-password").fill(password);
 
   // Supabase password login completes through this token endpoint. Start
   // listening before the click so a fast response cannot be missed.
+  // We add this check so that CI can tell us exactly where the UI failed (i.e, the missed supabase api call)
   const signInResponsePromise = page.waitForResponse(
     (response) =>
       response.request().method() === "POST" &&
@@ -24,7 +31,7 @@ test("user can sign in through the UI", async ({ page }) => {
       response.url().includes("grant_type=password"),
     { timeout: 30_000 },
   );
-  await page.getByTestId("auth-submit").click();
+  await submitButton.click();
 
   const signInResponse = await signInResponsePromise;
   expect(signInResponse.status(), "Supabase password sign-in should succeed").toBe(200);
