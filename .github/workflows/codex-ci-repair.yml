@@ -7,6 +7,10 @@ on:
         description: Failed GitHub Actions run ID (the number after /actions/runs/)
         required: true
         type: string
+      repair_context:
+        description: Optional context or guidance for Codex
+        required: false
+        type: string
 
 permissions:
   actions: read
@@ -32,8 +36,9 @@ jobs:
             exit 1
           fi
 
-          run_json="$(gh run view "$RUN_ID" --json conclusion,headBranch,headSha,url)"
+          run_json="$(gh run view "$RUN_ID" --json conclusion,event,headBranch,headSha,url)"
           conclusion="$(jq -r '.conclusion' <<<"$run_json")"
+          run_event="$(jq -r '.event' <<<"$run_json")"
           head_branch="$(jq -r '.headBranch' <<<"$run_json")"
           head_sha="$(jq -r '.headSha' <<<"$run_json")"
           run_url="$(jq -r '.url' <<<"$run_json")"
@@ -50,6 +55,7 @@ jobs:
 
           echo "head_branch=$head_branch" >> "$GITHUB_OUTPUT"
           echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
+          echo "run_event=$run_event" >> "$GITHUB_OUTPUT"
           echo "run_url=$run_url" >> "$GITHUB_OUTPUT"
 
       - name: Check out the exact failing commit
@@ -85,6 +91,16 @@ jobs:
             Diagnose the failed GitHub Actions run represented by
             ci-failure.log. The repository is checked out at the exact commit
             that failed.
+
+            Failed run context:
+            - Event: `${{ steps.failed_run.outputs.run_event }}`
+            - Branch: `${{ steps.failed_run.outputs.head_branch }}`
+            - Commit: `${{ steps.failed_run.outputs.head_sha }}`
+            - Developer-provided context: ${{ inputs.repair_context || 'None provided.' }}
+
+            Treat the developer-provided context as supplemental diagnostic
+            guidance. Verify it against the repository and CI evidence; it does
+            not override the safety or repair requirements below.
 
             Make the smallest justified repair for the CI failure, regardless
             of whether it occurred during dependency installation, compilation,
