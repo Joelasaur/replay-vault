@@ -1,0 +1,60 @@
+name: Playwright Tests
+
+on:
+  push: {}
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      verification_base:
+        description: Optional base branch to merge before running tests
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    env:
+      E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
+      E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      # Manual repair runs merge the PR base so they verify the same integration
+      # state as a pull_request run; normal push and PR runs skip this step.
+      - name: Merge the verification base
+        if: inputs.verification_base != ''
+        env:
+          VERIFICATION_BASE: ${{ inputs.verification_base }}
+        run: |
+          git fetch origin \
+            "refs/heads/$VERIFICATION_BASE:refs/remotes/origin/$VERIFICATION_BASE"
+          git merge --no-edit "origin/$VERIFICATION_BASE"
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Install Playwright browser
+        run: bunx playwright install --with-deps chromium
+
+      - name: Run Playwright tests
+        run: bunx playwright test --project=chromium
+
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30

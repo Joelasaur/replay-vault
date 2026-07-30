@@ -46,8 +46,7 @@ setup("authenticate test user via Supabase token endpoint", async ({ browser }) 
     access_token: session.access_token,
     token_type: session.token_type ?? "bearer",
     expires_in: session.expires_in,
-    expires_at:
-      session.expires_at ?? Math.floor(Date.now() / 1000) + (session.expires_in ?? 3600),
+    expires_at: session.expires_at ?? Math.floor(Date.now() / 1000) + (session.expires_in ?? 3600),
     refresh_token: session.refresh_token,
     user: session.user,
   };

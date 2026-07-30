@@ -14,6 +14,7 @@ import { Route as ReplaysRouteImport } from './routes/replays'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ReplaysIndexRouteImport } from './routes/replays.index'
 import { Route as ReplaysIdRouteImport } from './routes/replays.$id'
 import { Route as AuthenticatedReplaysNewRouteImport } from './routes/_authenticated/replays.new'
 
@@ -41,6 +42,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReplaysIndexRoute = ReplaysIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ReplaysRoute,
+} as any)
 const ReplaysIdRoute = ReplaysIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -58,14 +64,15 @@ export interface FileRoutesByFullPath {
   '/replays': typeof ReplaysRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/replays/$id': typeof ReplaysIdRoute
+  '/replays/': typeof ReplaysIndexRoute
   '/replays/new': typeof AuthenticatedReplaysNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/replays': typeof ReplaysRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/replays/$id': typeof ReplaysIdRoute
+  '/replays': typeof ReplaysIndexRoute
   '/replays/new': typeof AuthenticatedReplaysNewRoute
 }
 export interface FileRoutesById {
@@ -76,6 +83,7 @@ export interface FileRoutesById {
   '/replays': typeof ReplaysRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/replays/$id': typeof ReplaysIdRoute
+  '/replays/': typeof ReplaysIndexRoute
   '/_authenticated/replays/new': typeof AuthenticatedReplaysNewRoute
 }
 export interface FileRouteTypes {
@@ -86,14 +94,15 @@ export interface FileRouteTypes {
     | '/replays'
     | '/sitemap.xml'
     | '/replays/$id'
+    | '/replays/'
     | '/replays/new'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
-    | '/replays'
     | '/sitemap.xml'
     | '/replays/$id'
+    | '/replays'
     | '/replays/new'
   id:
     | '__root__'
@@ -103,6 +112,7 @@ export interface FileRouteTypes {
     | '/replays'
     | '/sitemap.xml'
     | '/replays/$id'
+    | '/replays/'
     | '/_authenticated/replays/new'
   fileRoutesById: FileRoutesById
 }
@@ -151,6 +161,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/replays/': {
+      id: '/replays/'
+      path: '/'
+      fullPath: '/replays/'
+      preLoaderRoute: typeof ReplaysIndexRouteImport
+      parentRoute: typeof ReplaysRoute
+    }
     '/replays/$id': {
       id: '/replays/$id'
       path: '/$id'
@@ -181,10 +198,12 @@ const AuthenticatedRouteRouteWithChildren =
 
 interface ReplaysRouteChildren {
   ReplaysIdRoute: typeof ReplaysIdRoute
+  ReplaysIndexRoute: typeof ReplaysIndexRoute
 }
 
 const ReplaysRouteChildren: ReplaysRouteChildren = {
   ReplaysIdRoute: ReplaysIdRoute,
+  ReplaysIndexRoute: ReplaysIndexRoute,
 }
 
 const ReplaysRouteWithChildren =

@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/auth")({
@@ -20,6 +20,9 @@ function AuthPage() {
   const [ign, setIgn] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => setHydrated(true), []);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -100,7 +103,7 @@ function AuthPage() {
           <button
             type="submit"
             data-testid="auth-submit"
-            disabled={loading}
+            disabled={loading || !hydrated}
             className="w-full rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-50"
             style={{
               backgroundColor: "var(--color-primary)",
