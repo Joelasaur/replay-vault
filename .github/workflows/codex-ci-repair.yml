@@ -42,10 +42,15 @@ jobs:
           head_branch="$(jq -r '.headBranch' <<<"$run_json")"
           head_sha="$(jq -r '.headSha' <<<"$run_json")"
           run_url="$(jq -r '.url' <<<"$run_json")"
-          verification_base="$(
-            gh api "/repos/$GH_REPO/actions/runs/$RUN_ID" \
-              --jq '.pull_requests[0].base.ref // empty'
-          )"
+          run_api_json="$(gh api "/repos/$GH_REPO/actions/runs/$RUN_ID")"
+          verification_base="$(jq -r '.pull_requests[0].base.ref // empty' <<<"$run_api_json")"
+          repair_sha="$(jq -r '.pull_requests[0].head.sha // empty' <<<"$run_api_json")"
+
+          # Pull request runs may report GitHub's synthetic merge SHA. Build the
+          # repair branch from the real PR head; push runs use the failing SHA.
+          if [[ -z "$repair_sha" ]]; then
+            repair_sha="$head_sha"
+          fi
 
           if [[ "$conclusion" != "failure" ]]; then
             echo "Run $RUN_ID concluded with '$conclusion', not 'failure'."
@@ -59,23 +64,34 @@ jobs:
 
           echo "head_branch=$head_branch" >> "$GITHUB_OUTPUT"
           echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
+          echo "repair_sha=$repair_sha" >> "$GITHUB_OUTPUT"
           echo "run_event=$run_event" >> "$GITHUB_OUTPUT"
           echo "run_url=$run_url" >> "$GITHUB_OUTPUT"
           echo "verification_base=$verification_base" >> "$GITHUB_OUTPUT"
 
-      - name: Check out the exact failing commit
+      - name: Check out the repair source commit
         uses: actions/checkout@v6
         with:
-          ref: ${{ steps.failed_run.outputs.head_sha }}
+          ref: ${{ steps.failed_run.outputs.repair_sha }}
           fetch-depth: 0
           persist-credentials: false
 
       - name: Confirm source branch belongs to this repository
         env:
           BASE_BRANCH: ${{ steps.failed_run.outputs.head_branch }}
+          REPAIR_SHA: ${{ steps.failed_run.outputs.repair_sha }}
         run: |
-          if ! git ls-remote --exit-code --heads origin "refs/heads/$BASE_BRANCH"; then
+          remote_sha="$(
+            git ls-remote --exit-code --heads origin "refs/heads/$BASE_BRANCH" |
+              awk '{print $1}'
+          )" || {
             echo "Automated repair currently supports same-repository branches only."
+            exit 1
+          }
+
+          if [[ "$remote_sha" != "$REPAIR_SHA" ]]; then
+            echo "The source branch has advanced since this workflow failed."
+            echo "Run CI again and repair the latest failing run instead."
             exit 1
           fi
 
@@ -94,13 +110,16 @@ jobs:
           sandbox: workspace-write
           prompt: |
             Diagnose the failed GitHub Actions run represented by
-            ci-failure.log. The repository is checked out at the exact commit
-            that failed.
+            ci-failure.log. For pull request failures, the repository is checked
+            out at the PR's real head commit so the suggested repair remains
+            cleanly based on the source branch. Verification will separately
+            recreate the PR merge context.
 
             Failed run context:
             - Event: `${{ steps.failed_run.outputs.run_event }}`
             - Branch: `${{ steps.failed_run.outputs.head_branch }}`
-            - Commit: `${{ steps.failed_run.outputs.head_sha }}`
+            - Failing run commit: `${{ steps.failed_run.outputs.head_sha }}`
+            - Repair source commit: `${{ steps.failed_run.outputs.repair_sha }}`
             - Developer-provided context: ${{ inputs.repair_context || 'None provided.' }}
 
             Treat the developer-provided context as supplemental diagnostic
@@ -235,7 +254,8 @@ jobs:
             Failed original run context:
             - Event: `${{ steps.failed_run.outputs.run_event }}`
             - Branch: `${{ steps.failed_run.outputs.head_branch }}`
-            - Commit: `${{ steps.failed_run.outputs.head_sha }}`
+            - Failing run commit: `${{ steps.failed_run.outputs.head_sha }}`
+            - Repair source commit: `${{ steps.failed_run.outputs.repair_sha }}`
             - Developer-provided context: ${{ inputs.repair_context || 'None provided.' }}
 
             Requirements:
