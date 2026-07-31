@@ -110,6 +110,7 @@ before committing them.
 | `auth.setup.ts`           | writes it           | Token exchange (if not mocked) + localStorage injection works. |
 | `browse.spec.ts`          | no                  | Anonymous users can browse + filter; submit gates redirect.    |
 | `filter-deeplink.spec.ts` | no                  | Filter state is URL-driven and shareable.                      |
+| `rank-suggester.spec.ts`  | no                  | Suggested ranks carry into the replay filters.                 |
 | `submit.spec.ts`          | yes                 | Authenticated submit works without visiting `/auth`.           |
 | `comment.spec.ts`         | yes                 | Authenticated comment works without visiting `/auth`.          |
 | `login-ui.spec.ts`        | no                  | Real or mocked full-UI login flow works.                       |

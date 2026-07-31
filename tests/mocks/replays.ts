@@ -1,6 +1,7 @@
 import type { Page, Request } from "@playwright/test";
 
 const SEEDED_REPLAY_ID = "10000000-0000-4000-8000-000000000001";
+const SUGGESTED_REPLAY_ID = "10000000-0000-4000-8000-000000000002";
 const CREATED_REPLAY_ID = "20000000-0000-4000-8000-000000000001";
 const MOCK_RESPONSE_HEADERS = {
   "cache-control": "no-store",
@@ -95,8 +96,28 @@ export async function mockReplayApi(page: Page) {
         created_at: now,
       },
     ],
+    [
+      SUGGESTED_REPLAY_ID,
+      {
+        id: SUGGESTED_REPLAY_ID,
+        role: "Support",
+        hero: "Ana",
+        rank: "Silver",
+        division: 2,
+        replay_code: "SLVS02",
+        map: "Hollywood",
+        result: "Loss",
+        notes: "Mocked suggested replay for rank filtering tests.",
+        submitter_id: "00000000-0000-4000-8000-000000000001",
+        submitter_ign: "MockPlayer",
+        created_at: now,
+      },
+    ],
   ]);
-  const comments = new Map<string, Comment[]>([[SEEDED_REPLAY_ID, []]]);
+  const comments = new Map<string, Comment[]>([
+    [SEEDED_REPLAY_ID, []],
+    [SUGGESTED_REPLAY_ID, []],
+  ]);
 
   await page.route(
     (url) => serverFunctionName(url)?.startsWith("listReplays_createServerFn_handler") ?? false,
