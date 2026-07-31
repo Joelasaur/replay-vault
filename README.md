@@ -15,12 +15,13 @@ App runs on <http://localhost:8080>.
 
 ## Playwright
 
-The whole point of the test suite is to demonstrate two techniques:
+This repository demonstrates these Playwright and GitHub Actions features:
 
-1. **Bypass the login UI in tests.** `tests/auth.setup.ts` exchanges the test user's email + password for a Supabase session **by hitting `/auth/v1/token` directly** with `apikey: <publishable key>`, then injects the returned session JSON into `localStorage` under `sb-<project-ref>-auth-token` — the exact key the Supabase JS client reads on boot. Playwright saves the resulting browser context to `playwright/.auth/user.json` (`storageState`), and every other authed spec loads that state and starts already-signed-in.
-2. **Keep specs tightly scoped.** Because storage state is portable, `submit.spec.ts` and `comment.spec.ts` can each be run in isolation and go straight to the feature under test — no shared beforeEach navigating a login form, no cookie leakage, no cross-spec ordering.
-
-For contrast, `tests/login-ui.spec.ts` walks the actual sign-in form so an interviewer can compare both approaches side by side.
+1. **Login Bypass - Avoid logging in through the UI in tests that are not testing login.** If every authenticated test signs in through the form, one login problem can make the entire suite fail and hide which features still work. `auth.setup.ts` instead creates one Supabase session and saves it as Playwright `storageState`, so submit and comment failures point to those features. The separate `login-ui.spec.ts` still tests the real sign-in flow directly.
+2. **Resilient Test Specs - Keep every spec independent and focused.** Each authenticated spec starts in a fresh browser context loaded from the same saved session. Tests can run alone, in parallel, or in any order without depending on another test to log in first or leaving cookies and other browser state behind. This makes failures easier to reproduce and trace back to one behavior.
+3. **API Mocks - Choose between fast UI isolation and full end-to-end coverage.** API mocks remove backend availability, network timing, and test-data changes from the equation, so a failure is much more likely to be in the UI itself. Mocked runs are also roughly 30% faster and more reliable. Because the same assertions run with mocks on or off, CI can use faster mocked tests lower in the test pyramid while still running slower, fully integrated tests when end-to-end confidence matters.
+4. **Ask Codex to repair failed Playwright CI runs.** The manually triggered [Codex CI repair](#codex-ci-repair) workflow reads a failed GitHub Actions run, proposes a fix, verifies it, and opens a draft PR for review.
+5. **Continue the repair through PR comments.** The [Codex repair feedback](#codex-repair-feedback) workflow responds to `/codex` comments on repair PRs with either an explanation or a follow-up commit.
 
 ### API mocking
 
@@ -104,18 +105,16 @@ before committing them.
 
 ### Spec map
 
-| Spec                      | Uses storage state? | What it proves                                              |
-| ------------------------- | ------------------- | ----------------------------------------------------------- |
-| `auth.setup.ts`           | writes it           | Token exchange + localStorage injection works.              |
-| `browse.spec.ts`          | no                  | Anonymous users can browse + filter; submit gates redirect. |
-| `filter-deeplink.spec.ts` | no                  | Filter state is URL-driven and shareable.                   |
-| `submit.spec.ts`          | yes                 | Authed submit works without visiting `/auth`.               |
-| `comment.spec.ts`         | yes                 | Authed comment works without visiting `/auth`.              |
-| `login-ui.spec.ts`        | no                  | Real or mocked full-UI login flow works.                    |
+| Spec                      | Uses storage state? | What it proves                                                 |
+| ------------------------- | ------------------- | -------------------------------------------------------------- |
+| `auth.setup.ts`           | writes it           | Token exchange (if not mocked) + localStorage injection works. |
+| `browse.spec.ts`          | no                  | Anonymous users can browse + filter; submit gates redirect.    |
+| `filter-deeplink.spec.ts` | no                  | Filter state is URL-driven and shareable.                      |
+| `submit.spec.ts`          | yes                 | Authenticated submit works without visiting `/auth`.           |
+| `comment.spec.ts`         | yes                 | Authenticated comment works without visiting `/auth`.          |
+| `login-ui.spec.ts`        | no                  | Real or mocked full-UI login flow works.                       |
 
-## GitHub
-
-Sync this project to GitHub from the Lovable editor: Plus (+) → GitHub → Connect project. Then clone locally to keep iterating.
+## Github Actions
 
 ### Codex CI repair
 
