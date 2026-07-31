@@ -1,7 +1,11 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
-test("authed user can comment on a replay", async ({ page }) => {
-  await page.goto("/replays");
+test.use({ authenticated: true });
+
+test("authed user can comment on a replay", { tag: "@mocked" }, async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByTestId("sign-out")).toBeVisible();
+  await page.getByTestId("nav-replays").click();
   const firstCard = page.getByTestId(/^replay-card-/).first();
   await firstCard.click();
 

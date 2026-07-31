@@ -1,10 +1,12 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 // Public browse — no login needed. Reset storage state so we test the anon path.
 test.use({ storageState: { cookies: [], origins: [] } });
 
-test("anonymous user can browse and filter replays", async ({ page }) => {
-  await page.goto("/replays");
+test("anonymous user can browse and filter replays", { tag: "@mocked" }, async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByTestId("nav-signin")).toBeVisible();
+  await page.getByTestId("nav-replays").click();
   await expect(page.getByTestId("filters")).toBeVisible();
   await expect(page.getByTestId("replay-grid")).toBeVisible();
 
@@ -16,7 +18,7 @@ test("anonymous user can browse and filter replays", async ({ page }) => {
   await expect(badges.first()).toBeVisible();
 });
 
-test("submit link redirects anonymous users to auth", async ({ page }) => {
+test("submit link redirects anonymous users to auth", { tag: "@mocked" }, async ({ page }) => {
   await page.goto("/replays/new");
   await expect(page).toHaveURL(/\/auth$/);
   await expect(page.getByTestId("auth-form")).toBeVisible();

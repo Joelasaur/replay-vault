@@ -22,6 +22,63 @@ The whole point of the test suite is to demonstrate two techniques:
 
 For contrast, `tests/login-ui.spec.ts` walks the actual sign-in form so an interviewer can compare both approaches side by side.
 
+### API mocking
+
+Run the real-backend suite normally:
+
+```bash
+bun run test:e2e
+```
+
+To run only specs tagged `@mocked`, without contacting Supabase Auth:
+
+```bash
+bun run test:e2e:mocked
+```
+
+Mock mode covers every spec. Playwright supplies a synthetic Supabase session
+and stateful replay API responses for browsing, filtering, creating replays,
+loading replay details, and posting comments. The same UI actions and
+assertions run in real and mocked modes; the specs contain no mock-specific
+branches. The setup project writes that synthetic session directly to
+`playwright/.auth/user.json`; in live mode, the same setup file performs the
+real Supabase token exchange instead.
+
+Backend blocking is a separate diagnostic option:
+
+```bash
+# Demonstrate the UI test failing with its backend unavailable.
+bun run test:e2e:blocked
+
+# Prove that the mocks cover every browser request to our backend.
+E2E_BLOCK_BACKEND=true bun run test:e2e:mocked
+```
+
+The guard still allows the app document, scripts, styles, images, and unrelated
+third parties. It blocks Supabase plus same-origin `fetch`/XHR requests and logs
+each missing mock as `[backend blocked]`. A passing mocked-and-blocked run proves
+that browser-side application backend requests were handled by mocks.
+
+### Ask Codex to add or update mocks
+
+Give Codex the spec name and use this prompt:
+
+```text
+Add or update API mocks for tests/<spec>.spec.ts. Run the spec once against the
+real backend with tracing enabled, inspect its backend requests and responses,
+then add sanitized typed mocks under tests/mocks/. Tag the spec @mocked if
+needed. Do not copy credentials, authorization headers, or live tokens into the
+repository. Finally, run the spec with E2E_API_MOCKS=true and
+E2E_BLOCK_BACKEND=true, and keep adding mocks until it passes without any
+[backend blocked] requests. Do not change application behavior or weaken test
+assertions.
+```
+
+Codex may ask for permission to run the local server or contact the configured
+test backend. Keep test credentials in the ignored `.env.test.local`; never
+paste them into the prompt. Review the resulting fixtures for sensitive data
+before committing them.
+
 ### Setup
 
 1. Create a test user through the app once:
@@ -54,7 +111,7 @@ For contrast, `tests/login-ui.spec.ts` walks the actual sign-in form so an inter
 | `filter-deeplink.spec.ts` | no                  | Filter state is URL-driven and shareable.                   |
 | `submit.spec.ts`          | yes                 | Authed submit works without visiting `/auth`.               |
 | `comment.spec.ts`         | yes                 | Authed comment works without visiting `/auth`.              |
-| `login-ui.spec.ts`        | no                  | Full-UI login flow still works.                             |
+| `login-ui.spec.ts`        | no                  | Real or mocked full-UI login flow works.                    |
 
 ## GitHub
 
@@ -90,8 +147,7 @@ fix once. After two failed test runs, the repair stops without opening a PR.
 
 On an open
 [`codex/ci-fix-*`](https://github.com/Joelasaur/replay-vault/pulls?q=is%3Apr+is%3Aopen+label%3Acodex-ci-repair)
-PR, start a conversation comment, submitted review, or inline review comment
-with `/codex`:
+PR, start a conversation comment with `/codex`:
 
 ```text
 /codex Why is this change needed?

@@ -1,22 +1,28 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 // Uses the storage state produced by auth.setup.ts — no login UI touched.
-test("authed user can submit a replay without visiting /auth", async ({ page }) => {
-  await page.goto("/replays/new");
-  await expect(page.getByTestId("new-replay-form")).toBeVisible();
+test.use({ authenticated: true });
 
-  const code = `E2E${Date.now().toString(36).toUpperCase()}`.slice(0, 15);
-  await page.getByTestId("new-role").selectOption("Damage");
-  await page.getByTestId("new-hero").selectOption("Tracer");
-  await page.getByTestId("new-rank").selectOption("Diamond");
-  await page.getByTestId("new-division").selectOption("3");
-  await page.getByTestId("new-code").fill(code);
-  await page.getByTestId("new-map").selectOption("Ilios");
-  await page.getByTestId("new-result").selectOption("Win");
-  await page.getByTestId("new-notes").fill("E2E-created replay.");
+test(
+  "authed user can submit a replay without visiting /auth",
+  { tag: "@mocked" },
+  async ({ page }) => {
+    await page.goto("/replays/new");
+    await expect(page.getByTestId("new-replay-form")).toBeVisible();
 
-  await page.getByTestId("new-submit").click();
+    const code = `E2E${Date.now().toString(36).toUpperCase()}`.slice(0, 15);
+    await page.getByTestId("new-role").selectOption("Damage");
+    await page.getByTestId("new-hero").selectOption("Tracer");
+    await page.getByTestId("new-rank").selectOption("Diamond");
+    await page.getByTestId("new-division").selectOption("3");
+    await page.getByTestId("new-code").fill(code);
+    await page.getByTestId("new-map").selectOption("Ilios");
+    await page.getByTestId("new-result").selectOption("Win");
+    await page.getByTestId("new-notes").fill("E2E-created replay.");
 
-  await expect(page).toHaveURL(/\/replays\/[0-9a-f-]{36}$/);
-  await expect(page.getByTestId("detail-code")).toHaveText(code);
-});
+    await page.getByTestId("new-submit").click();
+
+    await expect(page).toHaveURL(/\/replays\/[0-9a-f-]{36}$/);
+    await expect(page.getByTestId("detail-code")).toHaveText(code);
+  },
+);
