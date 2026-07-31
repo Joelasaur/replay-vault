@@ -15,12 +15,18 @@ const ISOLATED_UI_MODE = API_MOCKS_ENABLED || BACKEND_BLOCKED;
 const projects = ISOLATED_UI_MODE
   ? [
       {
+        name: "setup",
+        testMatch: /auth\.setup\.ts/,
+        use: { ...devices["Desktop Chrome"] },
+      },
+      {
         name: "mocked",
         grep: /@mocked/,
         use: {
           ...devices["Desktop Chrome"],
-          storageState: { cookies: [], origins: [] },
+          storageState: "playwright/.auth/user.json",
         },
+        dependencies: ["setup"],
       },
     ]
   : [

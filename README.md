@@ -30,16 +30,19 @@ Run the real-backend suite normally:
 bun run test:e2e
 ```
 
-To run only specs tagged `@mocked`, without `auth.setup.ts` or Supabase Auth:
+To run only specs tagged `@mocked`, without contacting Supabase Auth:
 
 ```bash
 bun run test:e2e:mocked
 ```
 
-Mock mode currently covers `login-ui.spec.ts`. Its Playwright route fulfills
-the password-token request with a synthetic Supabase session, so the real form,
-Supabase client, auth context, redirect, and signed-in header still run without
-contacting the authentication backend.
+Mock mode covers every spec. Playwright supplies a synthetic Supabase session
+and stateful replay API responses for browsing, filtering, creating replays,
+loading replay details, and posting comments. The same UI actions and
+assertions run in real and mocked modes; the specs contain no mock-specific
+branches. The setup project writes that synthetic session directly to
+`playwright/.auth/user.json`; in live mode, the same setup file performs the
+real Supabase token exchange instead.
 
 Backend blocking is a separate diagnostic option:
 
@@ -53,7 +56,8 @@ E2E_BLOCK_BACKEND=true bun run test:e2e:mocked
 
 The guard still allows the app document, scripts, styles, images, and unrelated
 third parties. It blocks Supabase plus same-origin `fetch`/XHR requests and logs
-each missing mock as `[backend blocked]`.
+each missing mock as `[backend blocked]`. A passing mocked-and-blocked run proves
+that browser-side application backend requests were handled by mocks.
 
 ### Ask Codex to add or update mocks
 

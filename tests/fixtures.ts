@@ -1,9 +1,10 @@
 import { test as base, expect } from "@playwright/test";
 import { blockApplicationBackend } from "./mocks/backend-guard";
-import { mockReplayList } from "./mocks/replays";
-import { mockSupabasePasswordLogin } from "./mocks/supabase-auth";
+import { mockReplayApi } from "./mocks/replays";
+import { mockSupabaseCurrentUser, mockSupabasePasswordLogin } from "./mocks/supabase-auth";
 
 type ReplayVaultFixtures = {
+  authenticated: boolean;
   backendControls: void;
   testCredentials: {
     email: string;
@@ -12,6 +13,8 @@ type ReplayVaultFixtures = {
 };
 
 export const test = base.extend<ReplayVaultFixtures>({
+  authenticated: [false, { option: true }],
+
   // Playwright fixtures require the first (possibly empty) fixture argument.
   // eslint-disable-next-line no-empty-pattern
   testCredentials: async ({}, provide) => {
@@ -28,7 +31,7 @@ export const test = base.extend<ReplayVaultFixtures>({
   },
 
   backendControls: [
-    async ({ page, testCredentials }, runTest) => {
+    async ({ authenticated, page, testCredentials }, runTest) => {
       // Register the fallback first because Playwright checks the newest
       // matching route first, allowing explicit mocks to take precedence.
       if (process.env.E2E_BLOCK_BACKEND === "true") {
@@ -36,8 +39,11 @@ export const test = base.extend<ReplayVaultFixtures>({
       }
 
       if (process.env.E2E_API_MOCKS === "true") {
+        if (authenticated) {
+          await mockSupabaseCurrentUser(page, testCredentials.email);
+        }
         await mockSupabasePasswordLogin(page, testCredentials.email);
-        await mockReplayList(page);
+        await mockReplayApi(page);
       }
 
       await runTest();

@@ -1,6 +1,7 @@
 import { test as setup, expect, request } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
+import { mockSession, supabaseStorageKey } from "./mocks/supabase-auth";
 
 /**
  * Programmatic login → storage state.
@@ -22,15 +23,45 @@ setup("authenticate test user via Supabase token endpoint", async ({ browser }) 
   const EMAIL = process.env.E2E_TEST_EMAIL;
   const PASSWORD = process.env.E2E_TEST_PASSWORD;
   const BASE_URL = process.env.E2E_BASE_URL ?? "http://localhost:8080";
+  const isolatedUiMode =
+    process.env.E2E_API_MOCKS === "true" || process.env.E2E_BLOCK_BACKEND === "true";
 
-  if (!SUPABASE_URL || !SUPABASE_KEY || !EMAIL || !PASSWORD) {
+  if (!SUPABASE_URL) {
+    throw new Error("Missing VITE_SUPABASE_URL / SUPABASE_URL. See README > Playwright.");
+  }
+
+  fs.mkdirSync(path.dirname(AUTH_FILE), { recursive: true });
+
+  if (isolatedUiMode) {
+    // Mocked and backend-blocked runs use the same committed synthetic session
+    // as the auth route mocks. No browser or backend request is needed.
+    fs.writeFileSync(
+      AUTH_FILE,
+      JSON.stringify({
+        cookies: [],
+        origins: [
+          {
+            origin: new URL(BASE_URL).origin,
+            localStorage: [
+              {
+                name: supabaseStorageKey(SUPABASE_URL),
+                value: JSON.stringify(mockSession()),
+              },
+            ],
+          },
+        ],
+      }),
+    );
+    return;
+  }
+
+  if (!SUPABASE_KEY || !EMAIL || !PASSWORD) {
     throw new Error(
       "Missing env: VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY, E2E_TEST_EMAIL, E2E_TEST_PASSWORD. See README > Playwright.",
     );
   }
 
-  const projectRef = new URL(SUPABASE_URL).hostname.split(".")[0];
-  const storageKey = `sb-${projectRef}-auth-token`;
+  const storageKey = supabaseStorageKey(SUPABASE_URL);
 
   // 1. Exchange credentials for a session directly with Supabase Auth.
   const api = await request.newContext();
@@ -66,7 +97,6 @@ setup("authenticate test user via Supabase token endpoint", async ({ browser }) 
   // 3. Verify the header now shows a signed-in state, then persist storage state.
   await expect(page.getByTestId("sign-out")).toBeVisible({ timeout: 10_000 });
 
-  fs.mkdirSync(path.dirname(AUTH_FILE), { recursive: true });
   await context.storageState({ path: AUTH_FILE });
   await context.close();
 });
