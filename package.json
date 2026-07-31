@@ -10,7 +10,10 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "playwright:ui": "playwright test --ui --project=chromium"
+    "playwright:ui": "playwright test --ui --project=chromium",
+    "test:e2e": "playwright test",
+    "test:e2e:mocked": "E2E_API_MOCKS=true playwright test",
+    "test:e2e:blocked": "E2E_BLOCK_BACKEND=true playwright test"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

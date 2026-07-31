@@ -8,6 +8,36 @@ loadEnv({ path: ".env.test.local", quiet: true });
 loadEnv({ path: ".env", quiet: true });
 
 const BASE_URL = process.env.E2E_BASE_URL ?? "http://localhost:8080";
+const API_MOCKS_ENABLED = process.env.E2E_API_MOCKS === "true";
+const BACKEND_BLOCKED = process.env.E2E_BLOCK_BACKEND === "true";
+const ISOLATED_UI_MODE = API_MOCKS_ENABLED || BACKEND_BLOCKED;
+
+const projects = ISOLATED_UI_MODE
+  ? [
+      {
+        name: "mocked",
+        grep: /@mocked/,
+        use: {
+          ...devices["Desktop Chrome"],
+          storageState: { cookies: [], origins: [] },
+        },
+      },
+    ]
+  : [
+      {
+        name: "setup",
+        testMatch: /auth\.setup\.ts/,
+        use: { ...devices["Desktop Chrome"] },
+      },
+      {
+        name: "chromium",
+        use: {
+          ...devices["Desktop Chrome"],
+          storageState: "playwright/.auth/user.json",
+        },
+        dependencies: ["setup"],
+      },
+    ];
 
 export default defineConfig({
   timeout: 10_000,
@@ -24,21 +54,7 @@ export default defineConfig({
     trace: "on-first-retry",
     screenshot: "only-on-failure",
   },
-  projects: [
-    {
-      name: "setup",
-      testMatch: /auth\.setup\.ts/,
-      use: { ...devices["Desktop Chrome"] },
-    },
-    {
-      name: "chromium",
-      use: {
-        ...devices["Desktop Chrome"],
-        storageState: "playwright/.auth/user.json",
-      },
-      dependencies: ["setup"],
-    },
-  ],
+  projects,
   // Only auto-start dev server when running against localhost.
   webServer: BASE_URL.includes("localhost")
     ? {
