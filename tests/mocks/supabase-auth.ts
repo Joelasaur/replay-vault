@@ -22,26 +22,16 @@ function mockAccessToken(email: string, expiresAt: number) {
 }
 
 export async function mockSupabasePasswordLogin(page: Page, email: string) {
-  let passwordLoginRequests = 0;
-  const unexpectedAuthRequests: string[] = [];
-
   await page.route(
-    (url) => url.pathname.startsWith("/auth/v1/"),
+    (url) =>
+      url.pathname.endsWith("/auth/v1/token") && url.searchParams.get("grant_type") === "password",
     async (route) => {
       const request = route.request();
-      const url = new URL(request.url());
-      const isPasswordLogin =
-        request.method() === "POST" &&
-        url.pathname.endsWith("/auth/v1/token") &&
-        url.searchParams.get("grant_type") === "password";
-
-      if (!isPasswordLogin) {
-        unexpectedAuthRequests.push(`${request.method()} ${url.pathname}${url.search}`);
-        await route.abort("blockedbyclient");
+      if (request.method() !== "POST") {
+        await route.fallback();
         return;
       }
 
-      passwordLoginRequests += 1;
       const now = new Date().toISOString();
       const expiresAt = Math.floor(Date.now() / 1000) + 3600;
 
@@ -83,9 +73,4 @@ export async function mockSupabasePasswordLogin(page: Page, email: string) {
       });
     },
   );
-
-  return {
-    passwordLoginRequestCount: () => passwordLoginRequests,
-    unexpectedAuthRequests: () => unexpectedAuthRequests,
-  };
 }

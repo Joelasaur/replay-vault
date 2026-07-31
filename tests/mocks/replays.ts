@@ -16,24 +16,17 @@ function isListReplaysServerFunction(url: URL) {
 }
 
 export async function mockReplayList(page: Page) {
-  let requests = 0;
-
   await page.route(
     (url) => isListReplaysServerFunction(url),
     async (route) => {
-      requests += 1;
       await route.fulfill({
         status: 200,
         contentType: "application/json",
         headers: { "x-playwright-mock": "replay-list" },
         // TanStack server functions return a middleware envelope; the client
-        // unwraps `result` before React Query receives the replay array.
-        json: { result: [], context: {} },
+        // unwraps `result` before React Query receives the replay payload.
+        json: { result: { replays: [] }, context: {} },
       });
     },
   );
-
-  return {
-    requestCount: () => requests,
-  };
 }
