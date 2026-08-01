@@ -38,6 +38,10 @@ dist-ssr
 /playwright-report/
 /blob-report/
 .env.test.local
+.env.backup.local
+
+# Local database backup artifacts (may contain sensitive application data)
+/backups/
 
 #Codex
 /tmp/
