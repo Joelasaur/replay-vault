@@ -16,6 +16,9 @@ permissions:
 
 jobs:
   test:
+    # TODO #63: Re-enable only after PRs receive matching Supabase Preview
+    # Branch credentials. Do not recreate a backend inside GitHub Actions.
+    if: ${{ false }}
     timeout-minutes: 60
     runs-on: ubuntu-latest
     env:

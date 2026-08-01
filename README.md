@@ -2,16 +2,36 @@
 
 A community replay repository for Overwatch. Players share replay codes, tag them with role / hero / rank / map / result, and comment. Public browsing is open to everyone; submitting a replay and commenting require signing in.
 
-Built with TanStack Start + React + Tailwind, backed by Lovable Cloud (Supabase Postgres + Auth). Instrumented end-to-end with Playwright — including a **programmatic login bypass** so authed UI tests never touch the sign-in page.
+Built with TanStack Start + React + Tailwind and an independently managed Supabase backend. Instrumented end-to-end with Playwright — including a **programmatic login bypass** so authed UI tests never touch the sign-in page.
+
+See the [Lovable dependency inventory](docs/lovable-dependency-inventory.md)
+for the migration classification and remaining cutover boundaries.
 
 ## Local dev
 
+Docker Desktop (or another Docker-compatible runtime) must be running. The
+Supabase CLI manages the local Docker containers; this repository does not
+maintain a `docker-compose.yml` or a self-hosted Supabase deployment.
+
 ```bash
 bun install
+bun run db:start
+cp .env.example .env.local # one-time setup
+bun run db:status
 bun run dev
 ```
 
 App runs on <http://localhost:8080>.
+
+After the one-time copy, put the local publishable key shown by
+`bun run db:status` in `.env.local`.
+
+The backend is disposable. `bun run db:reset` destroys the local database,
+replays every committed migration, and loads `supabase/seed.sql`. The synthetic
+login after each reset is `player@replayvault.local` / `replay-vault-local-only`.
+See [Local Supabase development](docs/local-development.md) for the complete
+workflow, Docker orchestration boundary, and safety boundaries. The rationale
+is recorded in the [CLI-managed Docker architecture decision](https://app.notion.com/p/3afc920a7e64813ca88beefd2bfed0e1).
 
 ## Playwright
 
@@ -82,21 +102,15 @@ before committing them.
 
 ### Setup
 
-1. Create a test user through the app once:
-   - Start dev server, open `/auth`, click "No account? Create one".
-   - Register with an email + password you're OK using for testing.
-2. Copy `.env.test.example` to the ignored `.env.test.local` file and fill in:
+1. Start or reset local Supabase. The seed creates a login-capable synthetic test user.
+2. Copy `.env.test.example` to the ignored `.env.test.local` file:
    ```bash
    cp .env.test.example .env.test.local
    ```
-   ```
-   E2E_TEST_EMAIL=you+e2e@example.com
-   E2E_TEST_PASSWORD=your-test-password
-   E2E_BASE_URL=http://localhost:8080   # or a deployed URL
-   ```
-   Playwright loads secrets from `.env.test.local`, then fills in the existing
-   `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` from Lovable's
-   tracked `.env`.
+   Copy `API URL` from `bun run db:status` to both URL variables and
+   `Publishable key` to both publishable-key variables. See the
+   [local Playwright setup](docs/local-development.md#playwright).
+   Playwright loads local or preview configuration only from ignored environment files.
 3. Run:
    ```bash
    bunx playwright install    # once

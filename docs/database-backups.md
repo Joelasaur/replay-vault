@@ -1,21 +1,19 @@
 # Database backups
 
-This document covers backup and reset boundaries for the two backends behind
-Replay Vault.
+This document covers backup and reset boundaries for Replay Vault's local,
+preview, and production environments.
 
 ## Provider boundaries
 
-| Backend | Owner | Backup | Reset |
-| --- | --- | --- | --- |
-| Production Supabase project | Coral Labs (self-managed) | `bun run db:backup:production` | Not provided |
-| Lovable Cloud development backend | Lovable | Lovable's own workflow | Lovable's own workflow |
+| Environment               | Lifecycle                  | Backup                         | Reset                          |
+| ------------------------- | -------------------------- | ------------------------------ | ------------------------------ |
+| Local Supabase in Docker  | Disposable                 | None; recreate from repository | `bun run db:reset`             |
+| Supabase Preview Branches | Ephemeral per pull request | None; recreate from repository | Recreate the Preview Branch    |
+| Coral Labs production     | Long-lived hosted Supabase | `bun run db:backup:production` | Intentionally no reset command |
 
-Lovable Cloud does not expose PostgreSQL administration credentials (database
-password, service role key, pooler connection string), so the CLI-based backup
-in this repository cannot target it. `scripts/supabase-db.sh` rejects
-`backup lovable`, `dump lovable`, and `reset lovable` explicitly rather than
-pretending to support them. Development resets and exports must be requested
-through Lovable, which performs them inside its own management boundary.
+Committed migrations and `supabase/seed.sql` are the recovery source for local
+and preview environments. They do not use production data or require database
+exports.
 
 There is intentionally **no production reset command**. Destroying production
 data is not a scripted operation.
@@ -43,12 +41,12 @@ bun run db:backup:production
 
 Output goes to `backups/production/<UTC timestamp>/`:
 
-| File | Contents |
-| --- | --- |
-| `roles.sql` | Application roles (`supabase db dump --role-only`) |
-| `schema.sql` | Application schema DDL |
-| `data.sql` | Table data via `COPY` |
-| `SHA256SUMS` | SHA-256 checksum for each of the three dumps |
+| File         | Contents                                           |
+| ------------ | -------------------------------------------------- |
+| `roles.sql`  | Application roles (`supabase db dump --role-only`) |
+| `schema.sql` | Application schema DDL                             |
+| `data.sql`   | Table data via `COPY`                              |
+| `SHA256SUMS` | SHA-256 checksum for each of the three dumps       |
 
 Verify a backup later with:
 
@@ -56,7 +54,7 @@ Verify a backup later with:
 cd backups/production/<timestamp> && sha256sum -c SHA256SUMS
 ```
 
-## What is *not* covered
+## What is _not_ covered
 
 - Supabase-managed schemas outside the application schema, and hosted-project
   configuration (auth settings, API keys, extensions enabled in the dashboard).
@@ -81,9 +79,7 @@ permission is `write` or `admin` before doing anything. The connection string is
 read from the `SUPABASE_PRODUCTION_DB_URL` repository secret; artifacts are
 uploaded with a short retention window and are never committed.
 
-Adding a future environment means adding one more provider branch in
-`scripts/supabase-db.sh` and one more choice in the workflow's `environment`
-input.
+The backup script and workflow target only the Coral Labs production project.
 
 ## References
 

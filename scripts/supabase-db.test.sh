@@ -97,13 +97,10 @@ BACKUP_ENV_FILE="$WORK/nope.env" BACKUP_OUTPUT_DIR="$WORK/backups3" \
   bash "$SCRIPT" backup production >/dev/null 2>&1 || status=$?
 check "missing credential file is rejected" 1 "$status"
 
-# 6. Unsupported Lovable and reset invocations are rejected.
-for args in "backup lovable" "dump lovable" "reset lovable" "reset production"; do
-  status=0
-  # shellcheck disable=SC2086
-  BACKUP_ENV_FILE="$WORK/.env.backup" bash "$SCRIPT" $args >/dev/null 2>&1 || status=$?
-  check "rejects '$args'" 1 "$status"
-done
+# 6. Production reset is rejected.
+status=0
+BACKUP_ENV_FILE="$WORK/.env.backup" bash "$SCRIPT" reset production >/dev/null 2>&1 || status=$?
+check "rejects 'reset production'" 1 "$status"
 
 # 7. No credential material leaks into stdout.
 if grep -q "secret" "$WORK/out.log"; then leaked=yes; else leaked=no; fi

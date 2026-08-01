@@ -86,33 +86,3 @@ CREATE POLICY "comments_update_own" ON public.comments FOR UPDATE TO authenticat
 CREATE POLICY "comments_delete_own" ON public.comments FOR DELETE TO authenticated USING (auth.uid() = author_id);
 
 CREATE INDEX comments_replay_idx ON public.comments(replay_id, created_at);
-
--- Seed replays (submitter_id NULL = system seed; submitter_ign is display-only)
-INSERT INTO public.replays (role, hero, rank, division, replay_code, map, result, notes, submitter_ign) VALUES
--- Tank
-('Tank','Reinhardt','Bronze',4,'BRZT01','King''s Row','Win','Basic shield discipline and rock timing.','ShieldSchool'),
-('Tank','D.Va','Silver',3,'SLVT02','Busan','Loss','Good example of matrix priorities on control maps.','MechMain'),
-('Tank','Winston','Gold',2,'GLDT03','Numbani','Win','Dive timing when supports are cooled down.','JumpPack'),
-('Tank','Orisa','Platinum',5,'PLTT04','Dorado','Win','Positioning around corners with javelin spin.','SpearWall'),
-('Tank','Sigma','Diamond',3,'DIAT05','Circuit Royal','Loss','Ult tracking and accretion angles.','GravityWell'),
-('Tank','Ramattra','Master',2,'MSTT06','Colosseo','Win','Form-swap tempo in staggered fights.','NemesisForm'),
-('Tank','Zarya','Grandmaster',3,'GMT07','Suravasa','Win','Bubble economy against dive.','ParticleBubble'),
-('Tank','Junker Queen','Champion',1,'CHPT08','Samoa','Loss','High-rank aggression and knife management.','QueenGrit'),
--- Damage
-('Damage','Genji','Bronze',3,'BRZD01','Lijiang Tower','Loss','Blade timing and dash resets basics.','DragonBlade'),
-('Damage','Soldier: 76','Silver',4,'SLVD02','Hollywood','Win','Cover play and heal-field placement.','TacVisor'),
-('Damage','Ashe','Gold',5,'GLDD03','Rialto','Win','Scoped positioning and Bob timing.','DynamiteAce'),
-('Damage','Tracer','Platinum',2,'PLTD04','Midtown','Loss','Backline pressure without over-committing.','BlinkQueen'),
-('Damage','Sojourn','Diamond',5,'DIAD05','Ilios','Win','Rail charge economy in brawls.','RailRunner'),
-('Damage','Widowmaker','Master',4,'MSTD06','Eichenwalde','Win','Sightline rotations and grapple resets.','ScopeStudy'),
-('Damage','Cassidy','Grandmaster',1,'GMD07','Colosseo','Loss','Roll usage against dive comps.','HighNoonVOD'),
-('Damage','Echo','Champion',2,'CHPD08','Antarctic Peninsula','Win','Duplicate targeting at top rank.','EchoLab'),
--- Support
-('Support','Moira','Bronze',5,'BRZS01','King''s Row','Win','Basic orb usage and safer fade timing.','MoiraMentor01'),
-('Support','Ana','Silver',2,'SLVS02','Hollywood','Loss','Nade priority and sleep confirmations.','NanoBoost'),
-('Support','Kiriko','Gold',1,'GLDS03','Nepal','Loss','Suzu timing vs dive.','FoxSpirit'),
-('Support','Lucio','Platinum',4,'PLTS04','Rialto','Win','Speed windows for taking space.','WallRider'),
-('Support','Baptiste','Diamond',1,'DIAS05','Ilios','Loss','Lamp placement and window timing.','LampGod'),
-('Support','Zenyatta','Master',1,'MSTS06','Shambali Monastery','Loss','Discord target priority.','HarmonyOrb'),
-('Support','Illari','Grandmaster',3,'GMS07','Suravasa','Win','Pylon placement and outburst combos.','SunPylon'),
-('Support','Brigitte','Champion',1,'CHPS08','Antarctic Peninsula','Loss','Peel patterns at top rank.','ShieldBash');
