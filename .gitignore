@@ -41,3 +41,7 @@ dist-ssr
 
 #Codex
 /tmp/
+
+# Database backups
+.env.backup
+/backups/
