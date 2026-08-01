@@ -13,7 +13,9 @@
     "playwright:ui": "playwright test --ui --project=chromium",
     "test:e2e": "playwright test",
     "test:e2e:mocked": "E2E_API_MOCKS=true playwright test",
-    "test:e2e:blocked": "E2E_BLOCK_BACKEND=true playwright test"
+    "test:e2e:blocked": "E2E_BLOCK_BACKEND=true playwright test",
+    "db:backup:production": "bash scripts/supabase-db.sh backup production",
+    "test:db-scripts": "bash scripts/supabase-db.test.sh"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
