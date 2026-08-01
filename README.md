@@ -13,6 +13,13 @@ bun run dev
 
 App runs on <http://localhost:8080>.
 
+## Database backups
+
+A credential-safe manual production backup command is available for the
+independently managed production database. Lovable Cloud development data
+remains managed through Lovable and has no local backup or reset command yet. See
+[Database backup workflows](docs/database-backups.md).
+
 ## Playwright
 
 This repository demonstrates these Playwright and GitHub Actions features:
