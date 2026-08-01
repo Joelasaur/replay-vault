@@ -60,8 +60,9 @@ bunx playwright install
 
 Run `bun run db:status`, then edit `.env.test.local`:
 
-- Copy `API URL` to `VITE_SUPABASE_URL`.
-- Copy `Publishable key` to `VITE_SUPABASE_PUBLISHABLE_KEY`.
+- Copy `API URL` to `SUPABASE_URL` and `VITE_SUPABASE_URL`.
+- Copy `Publishable key` to `SUPABASE_PUBLISHABLE_KEY` and
+  `VITE_SUPABASE_PUBLISHABLE_KEY`.
 - Leave the seeded `E2E_TEST_EMAIL` and `E2E_TEST_PASSWORD` unchanged.
 - Set `E2E_API_MOCKS` and `E2E_BLOCK_BACKEND` to `true` or `false` as needed.
 

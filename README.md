@@ -103,16 +103,13 @@ before committing them.
 ### Setup
 
 1. Start or reset local Supabase. The seed creates a login-capable synthetic test user.
-2. Copy `.env.test.example` to the ignored `.env.test.local` file and copy the
-   publishable key shown by `bun run db:status`:
+2. Copy `.env.test.example` to the ignored `.env.test.local` file:
    ```bash
    cp .env.test.example .env.test.local
    ```
-   ```
-   E2E_TEST_EMAIL=you+e2e@example.com
-   E2E_TEST_PASSWORD=your-test-password
-   E2E_BASE_URL=http://localhost:8080   # or a deployed URL
-   ```
+   Copy `API URL` from `bun run db:status` to both URL variables and
+   `Publishable key` to both publishable-key variables. See the
+   [local Playwright setup](docs/local-development.md#playwright).
    Playwright loads local or preview configuration only from ignored environment files.
 3. Run:
    ```bash
