@@ -142,7 +142,7 @@ export async function mockReplayApi(page: Page) {
     (url) => serverFunctionName(url)?.startsWith("getReplay_createServerFn_handler") ?? false,
     async (route) => {
       const { id } = requestData(route.request()) as { id?: string };
-      const replay = (id && replays.get(id)) ?? replays.get(SEEDED_REPLAY_ID);
+      const replay = (id ? replays.get(id) : undefined) ?? replays.get(SEEDED_REPLAY_ID);
       await route.fulfill({
         status: 200,
         contentType: "application/json",
