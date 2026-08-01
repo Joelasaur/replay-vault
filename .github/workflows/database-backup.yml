@@ -1,0 +1,81 @@
+name: Database Backup
+
+# Manual only. GitHub already limits workflow_dispatch to users with write
+# access; the guard job below re-checks the actor's permission so the job also
+# fails closed if that ever changes.
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Which database to back up
+        required: true
+        default: production
+        type: choice
+        options:
+          - production
+
+permissions:
+  contents: read
+
+jobs:
+  authorize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify the actor is a repository collaborator
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ACTOR: ${{ github.actor }}
+          REPO: ${{ github.repository }}
+        run: |
+          permission="$(gh api "repos/$REPO/collaborators/$ACTOR/permission" \
+            --jq '.permission')"
+          echo "actor permission: $permission"
+          case "$permission" in
+            admin|write) ;;
+            *) echo "::error::$ACTOR is not a repository collaborator with write access"; exit 1 ;;
+          esac
+
+  backup:
+    needs: authorize
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Install the Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Run the backup
+        env:
+          SUPABASE_PRODUCTION_DB_URL: ${{ secrets.SUPABASE_PRODUCTION_DB_URL }}
+          SUPABASE_PRODUCTION_PROJECT_REF: ${{ secrets.SUPABASE_PRODUCTION_PROJECT_REF }}
+        run: |
+          if [ -z "$SUPABASE_PRODUCTION_DB_URL" ] || [ -z "$SUPABASE_PRODUCTION_PROJECT_REF" ]; then
+            echo "::error::SUPABASE_PRODUCTION_DB_URL and SUPABASE_PRODUCTION_PROJECT_REF secrets must be configured"
+            exit 1
+          fi
+          # The script reads credentials from a file, not the environment, so
+          # write an ephemeral one inside the runner workspace.
+          umask 077
+          {
+            printf 'SUPABASE_PRODUCTION_DB_URL=%s\n' "$SUPABASE_PRODUCTION_DB_URL"
+            printf 'SUPABASE_PRODUCTION_PROJECT_REF=%s\n' "$SUPABASE_PRODUCTION_PROJECT_REF"
+          } > "$RUNNER_TEMP/.env.backup"
+          BACKUP_ENV_FILE="$RUNNER_TEMP/.env.backup" \
+          BACKUP_OUTPUT_DIR="$RUNNER_TEMP/backups" \
+            bash scripts/supabase-db.sh backup "${{ inputs.environment }}"
+
+      - name: Remove the ephemeral credential file
+        if: always()
+        run: rm -f "$RUNNER_TEMP/.env.backup"
+
+      - name: Upload the backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-backup-${{ inputs.environment }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/backups/**
+          retention-days: 7
+          if-no-files-found: error
