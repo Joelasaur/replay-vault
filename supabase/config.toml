@@ -1,1 +1,15 @@
-project_id = "ixgmlsclkbggsecyfeps"
+project_id = "replay-vault"
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[auth]
+enabled = true
+site_url = "http://127.0.0.1:8080"
+additional_redirect_urls = ["http://localhost:8080/**", "http://127.0.0.1:8080/**"]
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+enable_confirmations = false

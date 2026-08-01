@@ -2,10 +2,8 @@
 #
 # supabase-db.sh — credential-safe manual database operations.
 #
-# Providers:
+# Provider:
 #   production  Coral Labs owned Supabase project. Backup only, never reset.
-#   lovable     Lovable Cloud managed development backend. Dump/reset are NOT
-#               exposed here; Lovable owns those operations.
 #
 # Usage:
 #   scripts/supabase-db.sh backup production
@@ -39,10 +37,10 @@ Commands:
   backup    Export roles, schema, and data with SHA-256 checksums.
 
 Providers:
-  production   Self-managed Supabase project (Coral Labs).
+  production   Hosted Supabase project owned by Coral Labs.
 
 Unsupported by design:
-  backup lovable, dump lovable, reset lovable, reset production
+  reset production
 USAGE
 }
 
@@ -131,9 +129,6 @@ main() {
   case "$command:$provider" in
     backup:production)
       backup_production
-      ;;
-    backup:lovable|dump:lovable|reset:lovable)
-      die "the Lovable Cloud backend is managed by Lovable; '$command lovable' is not supported here. Use Lovable's own development reset/export workflow."
       ;;
     reset:production)
       die "resetting production is intentionally not supported."

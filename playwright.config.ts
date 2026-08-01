@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 import { config as loadEnv } from "dotenv";
 
-// Keep test credentials out of Lovable's tracked `.env`. Existing shell/CI
+// Keep test credentials out of committed environment files. Existing shell/CI
 // variables take precedence, then `.env.test.local`, then `.env` fills in
 // public Supabase/Vite configuration that is shared with the application.
 loadEnv({ path: ".env.test.local", quiet: true });
